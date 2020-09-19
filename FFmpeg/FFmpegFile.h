@@ -265,7 +265,7 @@ private:
         // I needed to add the thread_count onto the codec delay - pickles
         int getCodecDelay() const
         {
-            return ( ( (_videoCodec->capabilities & CODEC_CAP_DELAY) ? _codecContext->delay : 0 )
+            return ( ( (_videoCodec->capabilities & AV_CODEC_CAP_DELAY) ? _codecContext->delay : 0 )
                      + _codecContext->has_b_frames
                      + _codecContext->thread_count );
         }

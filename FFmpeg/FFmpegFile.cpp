@@ -782,8 +782,8 @@ FFmpegFile::FFmpegFile(const string & filename)
 #ifdef FF_API_LOWRES
             lowres = avctx->lowres;
 #endif
-            if ( lowres || ( videoCodec && (videoCodec->capabilities & CODEC_CAP_DR1) ) ) {
-                avctx->flags |= CODEC_FLAG_EMU_EDGE;
+            if ( lowres || ( videoCodec && (videoCodec->capabilities & AV_CODEC_CAP_DR1) ) ) {
+                //avctx->flags |= AV_CODEC_FLAG_EMU_EDGE;
             }
         }
 

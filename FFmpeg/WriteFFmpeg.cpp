@@ -2830,7 +2830,7 @@ WriteFFmpegPlugin::configureVideoStream(AVCodec* avCodec,
         frame_rate = av_d2q(fps, INT_MAX);
     }
 #if (LIBAVFORMAT_VERSION_MAJOR > 57) && !defined(FF_API_LAVF_CODEC_TB)
-#error "Using AVStream.codec.time_base as a timebase hint to the muxer is deprecated. Set AVStream.time_base instead."
+#warning "Using AVStream.codec.time_base as a timebase hint to the muxer is deprecated. Set AVStream.time_base instead."
 #endif
     avCodecContext->time_base = av_inv_q(frame_rate);;
     // [mov @ 0x1042d7600] Using AVStream.codec.time_base as a timebase hint to the muxer is deprecated. Set AVStream.time_base instead.
@@ -3679,25 +3679,7 @@ WriteFFmpegPlugin::writeVideo(AVFormatContext* avFormatContext,
             avFrame->pts = ( (int)time - _firstFrameToEncode );
             av_frame_set_pkt_duration(avFrame, 1);
         }
-        if ( (avFormatContext->oformat->flags & AVFMT_RAWPICTURE) != 0 &&
-              avCodecContext->codec->id == AV_CODEC_ID_RAWVIDEO ) {
-            // see ffmpeg.c:1168 in ffmpeg 3.2.2
-            /* raw pictures are written as AVPicture structure to
-             avoid any copies. We support temporarily the older
-             method. */
-            AVPacket pkt;
-            av_init_packet(&pkt);
-            pkt.flags |= AV_PKT_FLAG_KEY;
-            pkt.stream_index = avStream->index;
-            pkt.data = avFrame ? avFrame->data[0] : NULL;
-            pkt.size = sizeof(AVPicture);
-            pkt.pts  = pkt.dts  = time - _firstFrameToEncode;
-            const int writeResult = av_write_frame(avFormatContext, &pkt);
-            const bool writeSucceeded = (writeResult == 0);
-            if (!writeSucceeded) {
-                error = true;
-            }
-        } else {
+        if ( false ) {      } else {
             // Use a contiguous block of memory. This is to scope the
             // buffer allocation and ensure that memory is released even
             // if errors or exceptions occur. A vector will allocate
@@ -3940,12 +3922,12 @@ WriteFFmpegPlugin::beginEncode(const string& filename,
                 if ( !strcmp(formatContext_->oformat->name, "mp4") ||
                      !strcmp(formatContext_->oformat->name, "mov") ||
                      !strcmp(formatContext_->oformat->name, "3gp") ) {
-                    avCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+                    avCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
                 }
                 // Some formats want stream headers to be separate.
                 if (formatContext_->oformat->flags & AVFMT_GLOBALHEADER) {
                     // see ffmpeg_opt.c:1403 in ffmpeg 3.2.2
-                    avCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+                    avCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
                 }
                 // Activate multithreaded decoding. This must be done before opening the codec; see
                 // http://lists.gnu.org/archive/html/bino-list/2011-08/msg00019.html
@@ -4102,7 +4084,7 @@ WriteFFmpegPlugin::beginEncode(const string& filename,
              !strcmp(_formatContext->oformat->name, "mp4") ||
              !strcmp(_formatContext->oformat->name, "mov") ||
              !strcmp(_formatContext->oformat->name, "3gp") ) {
-            avCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+            avCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         }
 #if OFX_FFMPEG_PRORES
         if (codecId == AV_CODEC_ID_PRORES) {
